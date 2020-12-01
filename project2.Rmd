@@ -242,17 +242,26 @@ for (r in r.eigen$values) {
   
 }
 
+#PCA (scaled)
 quitters.pca.scaled <- prcomp(rDat,scale = TRUE)
 quitters.pca.scaled
 
+#Summary of scaled 
 summary(quitters.pca.scaled)
 
+#Plot elbow plot to determine components required
 plot(r.eigen$values, xlab="Eigenvalue Number",ylab="Eigenvalue Size",main="Scree Graph")+lines(r.eigen$values)
 
+#Look at Visualized data
 pca.plot.scaled <- autoplot(quitters.pca.scaled,data = PCAdat_factor,colour='Attrition',loadings=TRUE,loadings.colour="blue",loadings.label=TRUE)
 pca.plot.scaled
 
 
+autoplot(quitters.pca.scaled,data = PCAdat_factor,colour='Attrition',loadings=TRUE,loadings.colour="blue",loadings.label=TRUE,x=3,y=4)
+
+#Check out a 3D plot to attempt to determine best components to use
 pca3d(quitters.pca.scaled,group=PCAdat_factor$Attrition,legend = "topleft",biplot = TRUE,biplot.vars = 3)
+
+#15 PCs capture 81% of the variance in the data (0.1735757+0.07028831+0.06750148+0.06325877+0.05967773+0.04353646+0.04226411+0.04068733+0.03963922+0.03889302+0.03744872+0.036015730+0.03450615+0.03405034+0.03339357)
 ```
 
