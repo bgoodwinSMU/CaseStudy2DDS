@@ -13,6 +13,9 @@ Specifically, DDSAnalytics will analyze factors that lead to attrition.
 Some project deliverables:
 
 Top three factors that lead to attrition.
+
 Identification of trends hidden in the data concerning job role specific trends
+
 Robust visualization of said trends 
+
 Model for predicting attrition
