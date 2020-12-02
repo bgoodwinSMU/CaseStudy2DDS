@@ -351,7 +351,7 @@ pch.group <- c(rep(21, times=730), rep(22, times=140))
 col.group <- c(rep("gold", times=730), rep("skyblue2", times=140))
 
 # Plot individuals
-plot(quitters.pca.scaledPlots$x[,1], quitters.pca.scaledPlots$x[,2], xlab=paste("PCA 1 (", round(s$importance[2]*100, 1), "%)", sep = ""), ylab=paste("PCA 2 (", round(s$importance[5]*100, 1), "%)", sep = ""), pch=pch.group, col="black", bg=col.group, cex=1, las=1,xlim = c(-5,8),ylim = c(-5,8))
+plot(quitters.pca.scaledPlots$x[,1], quitters.pca.scaledPlots$x[,2], xlab=paste("PCA 1 (", round(s$importance[2]*100, 1), "%)", sep = ""), ylab=paste("PCA 2 (", round(s$importance[5]*100, 1), "%)", sep = ""), pch=pch.group, col="black", bg=col.group, cex=1, las=1,asp=1)
 # Add grid lines
 abline(v=0, lty=2, col="grey50")
 abline(h=0, lty=2, col="grey50")
@@ -372,15 +372,26 @@ library(ellipse)
 polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[1:729,]), level=0.95), col=adjustcolor("gold", alpha.f=0.25), border="gold")
 polygon(ellipse(c2*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[730:870,]), level=0.95), col=adjustcolor("skyblue2", alpha.f=0.25), border="skyblue2")
 
+# # Get co-ordinates of variables (loadings), and multiply by 10
+# l.x <- quitters.pca.scaledPlots$rotation[,1]*10
+# l.y <- quitters.pca.scaledPlots$rotation[,2]*10
+# 
+# 
+# # Draw arrows
+# arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=1.5)
+# # Variable labels
+# text(l.x, l.y, labels=row.names(quitters.pca.scaledPlots$rotation), col="red", pos=l.pos)
+
+
 # Create matrix of x coordinates (PC1) and multiply by 10
-l.x <- cbind(quitters.pca.scaledPlots$rotation[,1][c(21, 24, 10, 14,25)]) * 10
+l.x <- cbind(quitters.pca.scaledPlots$rotation[c(21,24,10,14,15,1,27,25),1]) * 10
 # y coordinates (PC2)
-l.y <- cbind(quitters.pca.scaledPlots$rotation[,2][c(15, 1, 27, 25)]) * 10
+l.y <- cbind(quitters.pca.scaledPlots$rotation[c(21,24,10,14,15,1,27,25),2])*10
 
 # Add arrows to biplot
 arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=3)
 # Labels
-text(l.x, l.y, labels=rownames(l.x) , col="red", pos=c(2, 1, 3, 1), offset=1, cex=1.2)
+text(l.x, l.y, labels=rownames(l.x) , col="black", pos=c(1,1,3,4,1,3,1,2), offset=1.5, cex=1.2)
 
 # Screeplot
 # Screeplot
@@ -389,5 +400,50 @@ screeplot(quitters.pca.scaledPlots)
 screeplot(quitters.pca.scaledPlots, type="lines")
 
 biplot(quitters.pca.scaledPlots,group="Attrition")
+```
+
+```{r}
+# Plot individuals
+plot(quitters.pca.scaledPlots$x[,2], quitters.pca.scaledPlots$x[,3], xlab=paste("PCA 2 (", round(s$importance[5]*100, 1), "%)", sep = ""), ylab=paste("PCA 3 (", round(s$importance[8]*100, 1), "%)", sep = ""), pch=pch.group, col="black", bg=col.group, cex=1, las=1,asp=0.5)
+# Add grid lines
+abline(v=0, lty=2, col="grey50")
+abline(h=0, lty=2, col="grey50")
+
+# Add legend
+legend("topleft", legend=c("No Attrition", "Attrition"), col="black", pt.bg=c("gold", "skyblue2"), pch=c(21, 22), pt.cex=1.5)
+
+# Get individuals (observations) as a matrix
+tab <- matrix(c(quitters.pca.scaledPlots$x[,2], quitters.pca.scaledPlots$x[,3]), ncol=2)
+# Calculate correlations
+c1 <- cor(tab[1:729,])
+c2 <- cor(tab[730:840,])
+
+
+# Load package
+library(ellipse)
+# Plot ellipse
+polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[1:729,]), level=0.95), col=adjustcolor("gold", alpha.f=0.25), border="gold")
+polygon(ellipse(c2*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[730:870,]), level=0.95), col=adjustcolor("skyblue2", alpha.f=0.25), border="skyblue2")
+
+# # Get co-ordinates of variables (loadings), and multiply by 10
+# l.x <- quitters.pca.scaledPlots$rotation[,1]*10
+# l.y <- quitters.pca.scaledPlots$rotation[,2]*10
+# 
+# 
+# # Draw arrows
+# arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=1.5)
+# # Variable labels
+# text(l.x, l.y, labels=row.names(quitters.pca.scaledPlots$rotation), col="red", pos=l.pos)
+
+
+# Create matrix of x coordinates (PC1) and multiply by 10
+l.x <- cbind(quitters.pca.scaledPlots$rotation[c(21,19,18,20,3,11,13,15,5),2]) * 10
+# y coordinates (PC2)
+l.y <- cbind(quitters.pca.scaledPlots$rotation[c(21,19,18,20,3,11,13,15,5),3])*10
+
+# Add arrows to biplot
+arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=3)
+# Labels
+text(l.x, l.y, labels=rownames(l.x) , col="black", pos=c(3,1,3,1,1,2,1,1), offset=1.5, cex=1.2)
 ```
 
