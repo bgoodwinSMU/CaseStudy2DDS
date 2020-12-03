@@ -327,16 +327,13 @@ p6
 #Useful line for sorting PC's
 #sort(abs(quitters.pca.scaled$rotation[,2]),decreasing = TRUE)
 
-#barplot(abs(quitters.pca.scaled$rotation[,1]),main="PC 1 Loadings Plot",las=2,ylim = c(0.0,0.6))+abline(0.30,0)
+# barplot((quitters.pca.scaled$rotation[,1]),main="PC 1 Loadings Plot",las=2,+abline(0.30,0))
 
 
 ```
 
 ```{r}
-####Testing biplot code####
-#Create multiple graphs of loadings and attrition
-#Plot ellipses of quit or no
-#only plot loadings of most powerful 
+#Plot PC1 PC2
 
 #Create new df for R
 pcaDatPlots <- pcaDat[,-c(17,22)]
@@ -345,6 +342,9 @@ pcaDatPlots <- pcaDatPlots[,-c(2)]
 quitters.pca.scaledPlots <- prcomp(pcaDatPlots,scale = TRUE)
 
 s <- summary(quitters.pca.scaledPlots)
+
+fviz_eig(quitters.pca.scaledPlots, addlabels=TRUE, hjust = -0.3,
+               linecolor ="red",ncp = 15) + theme_minimal()
 
 # Create groups
 pch.group <- c(rep(21, times=730), rep(22, times=140))
@@ -372,38 +372,27 @@ library(ellipse)
 polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[1:729,]), level=0.95), col=adjustcolor("gold", alpha.f=0.25), border="gold")
 polygon(ellipse(c2*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[730:870,]), level=0.95), col=adjustcolor("skyblue2", alpha.f=0.25), border="skyblue2")
 
-# # Get co-ordinates of variables (loadings), and multiply by 10
-# l.x <- quitters.pca.scaledPlots$rotation[,1]*10
-# l.y <- quitters.pca.scaledPlots$rotation[,2]*10
-# 
-# 
-# # Draw arrows
-# arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=1.5)
-# # Variable labels
-# text(l.x, l.y, labels=row.names(quitters.pca.scaledPlots$rotation), col="red", pos=l.pos)
-
-
 # Create matrix of x coordinates (PC1) and multiply by 10
-l.x <- cbind(quitters.pca.scaledPlots$rotation[c(21,24,10,14,15,1,27,25),1]) * 10
+l.x <- cbind(quitters.pca.scaledPlots$rotation[,1][c(11, 13, 17, 12)]) * 10
 # y coordinates (PC2)
-l.y <- cbind(quitters.pca.scaledPlots$rotation[c(21,24,10,14,15,1,27,25),2])*10
+l.y <- cbind(quitters.pca.scaledPlots$rotation[,2][c(11,13,17,12)]) * 10
 
 # Add arrows to biplot
-arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=3)
+arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=2)
 # Labels
-text(l.x, l.y, labels=rownames(l.x) , col="black", pos=c(1,1,3,4,1,3,1,2), offset=1.5, cex=1.2)
+text(l.x, l.y, labels=rownames(l.x) , col="black", pos=c(2, 3, 4, 1), offset=1, cex=1.2)
 
-# Screeplot
-# Screeplot
-layout(matrix(1:2, ncol=2))
-screeplot(quitters.pca.scaledPlots)
-screeplot(quitters.pca.scaledPlots, type="lines")
+###Interpretation of PC1 and PC2####
+#The first component is positively correlated with total working years, years at company, job level, monthly income.  This suggests the give variables vary together and when one goes down, the others decrease as well.  The component could be considered a primary measure of career length and longevity and well as a measure of success.
 
-biplot(quitters.pca.scaledPlots,group="Attrition")
+#The second component is mostly correlated with number of companies worked, and age, but in a negative direction.  Years with current manager and years in current role are correlated with the second component in the positive direction, which indicates that as number of companies and age decrease, years with current manager and years in current role increase.  
+
+#Looking at the biplot, we can see the loaings that point in the direction of the attrition ellipse.  In terms of the first component, we can see that Job Role and Marriage Status point more towards the attrition ellipse.  The same with Job Satisfaction and percent salary hike for the second component. 
+
 ```
 
 ```{r}
-# Plot individuals
+# Plot PC2 PC3
 plot(quitters.pca.scaledPlots$x[,2], quitters.pca.scaledPlots$x[,3], xlab=paste("PCA 2 (", round(s$importance[5]*100, 1), "%)", sep = ""), ylab=paste("PCA 3 (", round(s$importance[8]*100, 1), "%)", sep = ""), pch=pch.group, col="black", bg=col.group, cex=1, las=1,asp=0.5)
 # Add grid lines
 abline(v=0, lty=2, col="grey50")
@@ -425,25 +414,122 @@ library(ellipse)
 polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[1:729,]), level=0.95), col=adjustcolor("gold", alpha.f=0.25), border="gold")
 polygon(ellipse(c2*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[730:870,]), level=0.95), col=adjustcolor("skyblue2", alpha.f=0.25), border="skyblue2")
 
-# # Get co-ordinates of variables (loadings), and multiply by 10
-# l.x <- quitters.pca.scaledPlots$rotation[,1]*10
-# l.y <- quitters.pca.scaledPlots$rotation[,2]*10
-# 
-# 
-# # Draw arrows
-# arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=1.5)
-# # Variable labels
-# text(l.x, l.y, labels=row.names(quitters.pca.scaledPlots$rotation), col="red", pos=l.pos)
-
-
 # Create matrix of x coordinates (PC1) and multiply by 10
-l.x <- cbind(quitters.pca.scaledPlots$rotation[c(21,19,18,20,3,11,13,15,5),2]) * 10
+l.x <- cbind(quitters.pca.scaledPlots$rotation[,2][c(13, 26, 3, 11)]) * 10
 # y coordinates (PC2)
-l.y <- cbind(quitters.pca.scaledPlots$rotation[c(21,19,18,20,3,11,13,15,5),3])*10
+l.y <- cbind(quitters.pca.scaledPlots$rotation[,3][c(13,26,3,11)]) * 10
 
 # Add arrows to biplot
 arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=3)
 # Labels
-text(l.x, l.y, labels=rownames(l.x) , col="black", pos=c(3,1,3,1,1,2,1,1), offset=1.5, cex=1.2)
+text(l.x, l.y, labels=rownames(l.x) , col="black", pos=c(2, 3, 1, 4), offset=1, cex=1.2)
+
+###Interpretation of PC3####
+
+#The third component is most correlated with performance rating and percent salary hike, both in a negative direction.  Department and job role are correlated with the third component in a positive direction, suggesting that as performance rating and percent salary hike decrease, department and job role increase.
+
+#Looking at the biplot, we can see the loadings that point in the direction of the attrition ellipse.  In terms of the third component, we can see that department and job role point more towards the attrition ellipse, this is the second biplot that job role has pointed towards attrition, suggesting this may be a variable of interest concerning attrition.
+
 ```
+
+```{r}
+# Plot PC3 PC4
+plot(quitters.pca.scaledPlots$x[,3], quitters.pca.scaledPlots$x[,4], xlab=paste("PCA 3 (", round(s$importance[8]*100, 1), "%)", sep = ""), ylab=paste("PCA 4 (", round(s$importance[11]*100, 1), "%)", sep = ""), pch=pch.group, col="black", bg=col.group, cex=1, las=1,asp=1)
+# Add grid lines
+abline(v=0, lty=2, col="grey50")
+abline(h=0, lty=2, col="grey50")
+
+# Add legend
+legend("topleft", legend=c("No Attrition", "Attrition"), col="black", pt.bg=c("gold", "skyblue2"), pch=c(21, 22), pt.cex=1.5)
+
+# Get individuals (observations) as a matrix
+tab <- matrix(c(quitters.pca.scaledPlots$x[,3], quitters.pca.scaledPlots$x[,4]), ncol=2)
+# Calculate correlations
+c1 <- cor(tab[1:729,])
+c2 <- cor(tab[730:840,])
+
+
+# Load package
+library(ellipse)
+# Plot ellipse
+polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[1:729,]), level=0.95), col=adjustcolor("gold", alpha.f=0.25), border="gold")
+polygon(ellipse(c2*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[730:870,]), level=0.95), col=adjustcolor("skyblue2", alpha.f=0.25), border="skyblue2")
+
+# Create matrix of x coordinates (PC1) and multiply by 10
+l.x <- cbind(quitters.pca.scaledPlots$rotation[,3][c(14, 3, 13, 1)]) * 10
+# y coordinates (PC2)
+l.y <- cbind(quitters.pca.scaledPlots$rotation[,4][c(14, 3, 13, 1)]) * 10
+
+# Add arrows to biplot
+arrows(x0=0, x1=l.x, y0=0, y1=l.y, col="red", length=0.15, lwd=3)
+# Labels
+text(l.x, l.y, labels=rownames(l.x) , col="black", pos=c(1, 3, 2, 3), offset=1, cex=1.2)
+
+###Interpretation of PC4####
+
+#The fourth component is most correlated with stock option level.  Martial Status and percent salary hike are correlated with the fourth component, but in a negative direction.  This suggest that as stock option level increases, martial status and percent salary hike decrease.  
+
+#Looking at the biplot, we can see the loadings that point in the direction of the attrition ellipse.  In terms of the the fourth component, we can see that marital status and age point more towards the attrition ellipse, this is the second biplot that maritial status has pointed towards attrition, suggesting this may be another variable of interest concerning attrition.
+
+```
+
+
+
+```{r}
+####Loadings Plots####
+#PC1
+c.pc1 <- ifelse(quitters.pca.scaledPlots$rotation[,1] > 0, yes="green2", no="red2")
+n.pc1 <- ifelse(quitters.pca.scaledPlots$rotation[,1] > 0, yes=-0.01, no=quitters.pca.scaledPlots$rotation[,1]-0.01)
+par(mar=c(8,3,2,1)) # Set margins
+b1 <- barplot(quitters.pca.scaledPlots$rotation[,1], main="PC 1 Loadings Plot", col=c.pc1, las=2, axisnames=FALSE,ylim = c(-0.3,0.5))
+abline(h=0) # Add horizontal line
+text(x=b1, y=n.pc1, labels=names(quitters.pca.scaledPlots$rotation[,1]), adj=1, srt=90, xpd=TRUE) # Add variable names
+
+
+#PC2
+c.pc2 <- ifelse(quitters.pca.scaledPlots$rotation[,2] > 0, yes="green2", no="red2")
+n.pc2 <- ifelse(quitters.pca.scaledPlots$rotation[,2] > 0, yes=-0.01, no=quitters.pca.scaledPlots$rotation[,2]-0.01)
+par(mar=c(8,3,2,1)) # Set margins
+b2 <- barplot(quitters.pca.scaledPlots$rotation[,2], main="PC 2 Loadings Plot", col=c.pc2, las=2, axisnames=FALSE)
+abline(h=0) # Add horizontal line
+text(x=b2, y=n.pc2, labels=names(quitters.pca.scaledPlots$rotation[,2]), adj=1, srt=90, xpd=TRUE) # Add variable names
+
+#PC3
+c.pc3 <- ifelse(quitters.pca.scaledPlots$rotation[,3] > 0, yes="green2", no="red2")
+n.pc3 <- ifelse(quitters.pca.scaledPlots$rotation[,3] > 0, yes=-0.01, no=quitters.pca.scaledPlots$rotation[,3]-0.01)
+par(mar=c(8,3,2,1)) # Set margins
+b3 <- barplot(quitters.pca.scaledPlots$rotation[,3], main="PC 3 Loadings Plot", col=c.pc3, las=2, axisnames=FALSE,ylim = c(-0.6,0.6))
+abline(h=0) # Add horizontal line
+text(x=b3, y=n.pc3, labels=names(quitters.pca.scaledPlots$rotation[,3]), adj=1, srt=90, xpd=TRUE) # Add variable names
+
+#PC4
+c.pc4 <- ifelse(quitters.pca.scaledPlots$rotation[,4] > 0, yes="green2", no="red2")
+n.pc4 <- ifelse(quitters.pca.scaledPlots$rotation[,4] > 0, yes=-0.01, no=quitters.pca.scaledPlots$rotation[,4]-0.01)
+par(mar=c(8,3,2,1)) # Set margins
+b4 <- barplot(quitters.pca.scaledPlots$rotation[,4], main="PC 4 Loadings Plot", col=c.pc4, las=2, axisnames=FALSE,ylim = c(-0.4,0.6))
+abline(h=0) # Add horizontal line
+text(x=b4, y=n.pc4, labels=names(quitters.pca.scaledPlots$rotation[,4]), adj=1, srt=90, xpd=TRUE) # Add variable names
+
+#PC5
+c.pc5 <- ifelse(quitters.pca.scaledPlots$rotation[,5] > 0, yes="green2", no="red2")
+n.pc5 <- ifelse(quitters.pca.scaledPlots$rotation[,5] > 0, yes=-0.01, no=quitters.pca.scaledPlots$rotation[,5]-0.01)
+par(mar=c(8,3,2,1)) # Set margins
+b5 <- barplot(quitters.pca.scaledPlots$rotation[,5], main="PC 5 Loadings Plot", col=c.pc5, las=2, axisnames=FALSE,ylim = c(-0.6,0.6))
+abline(h=0) # Add horizontal line
+text(x=b5, y=n.pc5, labels=names(quitters.pca.scaledPlots$rotation[,5]), adj=1, srt=90, xpd=TRUE) # Add variable names
+
+
+#PC6
+c.pc6 <- ifelse(quitters.pca.scaledPlots$rotation[,6] > 0, yes="green2", no="red2")
+n.pc6 <- ifelse(quitters.pca.scaledPlots$rotation[,6] > 0, yes=-0.01, no=quitters.pca.scaledPlots$rotation[,6]-0.01)
+par(mar=c(8,3,2,1)) # Set margins
+b6 <- barplot(quitters.pca.scaledPlots$rotation[,6], main="PC 6 Loadings Plot", col=c.pc6, las=2, axisnames=FALSE,ylim = c(-0.4,0.6))
+abline(h=0) # Add horizontal line
+text(x=b6, y=n.pc6, labels=names(quitters.pca.scaledPlots$rotation[,6]), adj=1, srt=90, xpd=TRUE) # Add variable names
+
+
+```
+
+
+
 
