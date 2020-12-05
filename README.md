@@ -80,7 +80,7 @@ For Bayesian classifcation, the preferred datatype is a factor,so the data was c
 
 An additional model was used for classification.  Regularized Discrimiant Analysis was the second method (This operator performs a regularized discriminant analysis (RDA). for nominal labels and numerical attributes. Discriminant analysis is used to determine which variables discriminate between two or more naturally occurring groups, it may have a descriptive or a predictive objective.). I felt these characteristics were preferred for this data. After analysis I felt the RDA model was better suited, and chose to submit it's predictions for attrition. RDA resulted in 85% accuracy, 87% sensitivity, and 83% specificity.  Outperforming the Bayesian classifier on all metrics.
 
-I believe the Bayesian classifer overestimated attrition in the testing dataset, classifying about 54% as yes, and RDA classified about 18% as yes.  RDA seems to be a better fit.
+I believe the Bayesian classifer overestimated attrition in the testing dataset, classifying about 21% as yes, and RDA classified about 18% as yes.  RDA seems to be a better fit.
 
 All classification was implemented using the Caret package for R.  The data was split up into testing and training and then validated.  The attrition estimates were generated using RDA.  
 
