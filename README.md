@@ -19,3 +19,6 @@ Identification of trends hidden in the data concerning job role specific trends
 Robust visualization of said trends 
 
 Model for predicting attrition
+
+Model for salary prediction.
+
