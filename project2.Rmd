@@ -2,12 +2,100 @@
 title: "Project 2 DS6306"
 author: "Ben Goodwin"
 date: "11/29/2020"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/benjamingoodwin/Desktop/casestudy2DDS/CaseStudy2DDS/") 
 ```
+
+```{r}
+# Project Summary
+# 
+# Frito-Lay contacted DDSAnalytics concerning it's specialization in talent management solutions. The team at Frito-Lay is especially interested in DDSAnalytics claimed abilities to harness data science by predicting attrition. DDSAnalytics has been tasked with conducting an analysis of existing employee data.
+# 
+# Specifically, DDSAnalytics will analyze factors that lead to attrition.
+
+
+# Some project deliverables:
+# 
+# Top three factors that lead to attrition.
+# 
+# Identification of trends hidden in the data concerning job role specific trends
+# 
+# Robust visualization of said trends
+# 
+# Model for predicting attrition, alongside a .csv file containing predictions for attrition
+# 
+# Model for salary prediction, alongside a .csv file containing predictions for monthly salary
+# 
+# I am confident in the validity of this analysis and hope that Frito-Lay determines an appropriate course of action to take based on the work in this R markdown file.
+
+
+#Execuitive Summary
+
+# In this file we will examine a few questions of interest: 
+#   
+# 1) Top three factors that contribute to attrition.
+# 
+# 2) Identification of trends in the data concerning job role specific trends.
+# 
+# 3) Robust visualization of said trends
+# 
+# 4) A model for prediction of attrition
+# 
+# 5) A model for prediction of salaries
+
+# General Conclusions for QOI1:
+# 
+# Attrition is a tricky variable of interest. When the two groups are plotted, there is visual evidence supporting those who stay with their jobs are very similar to those who leave their jobs. Luckily, using principal component anaylsis (PCA) I was able to derive some important trends between those who stayed and those who left jobs.
+# 
+# PCA is a technique for dimensionality reduction, and worked well with this dataset as 38 variables were present in the initial dataset. (CaseStudy2-data.txt) The initial impression of the data was that it was quite noisy and contained many similar variables attempting to measure the same thing, and a few variables which did not yeild any results significant for the attrition analysis or for any of the other QOIs.
+
+#General Conclusions for QOI2: 
+
+# From the components and the bi-plot, there are some interesting takeaways about job roles.
+# 
+# -Job roles tend to cluster around each other, indiciating they each have specific attributes that lend themselves to that job role (maybe not that profound, but certainly can be confirmed after looking at the plot)
+# 
+# -Managers and research directors tend to be more heavily associated with years of experience.
+# 
+# -Sales representatives and sales directors are associated with attrition in terms of abosolute of magnitude of their loadings.
+# 
+# -Interestingly, number of companies worked lands squarely in the middle of the pack and doesn't seem to have mich bearing on job role.
+# 
+# -Years with current manager doesn't seem to point to job roles in a specific direction, indicating should one wish to pivot, they should develop attributes more in line with the intended role (a decision that could be made based on this chart)
+
+
+#General Conclusions for QOI3:
+
+#Throughout this file, you will find many visualizations of the data.  Each plot has commentary and adequate visuals to understand the purpose of the chart.
+
+#General Conclusions for QOI4:
+
+# Classification of Attrition
+# 
+# Since attrition seemed to be hard to visually spot, this presented an interesting problem for classification. Could a classifier examine the data on a level that is unobservable by the human eye? Furthermore, the balance of the data was very off. Only 140 of the 830 employees were indicated as "Yes" for attrition, meaning that 730 of the employees indicated "No" for attrition. This ratio was about .19, meaning that if you guessed that 4 out of 5 employees were "No" for attrition, they could potientially be fairly accurate.
+# 
+# The solution was to oversample the data to restore balance between the no's and yes's.
+# 
+# For Bayesian classifcation, the preferred datatype is a factor,so the data was converted to all factors, including the outcome variable, "Attrition." Making this a binary classification model. The Bayesian classifer came in at 81% accuracy, 86% sensitivity, and 76% specificity.
+# 
+# An additional model was used for classification. Regularized Discriminant Analysis was the second method (This operator performs a regularized discriminant analysis (RDA). for nominal labels and numerical attributes. Discriminant analysis is used to determine which variables discriminate between two or more naturally occurring groups, it may have a descriptive or a predictive objective.). I felt these characteristics were preferred for this data. After analysis I felt the RDA model was better suited, and chose to submit it's predictions for attrition. RDA resulted in 85% accuracy, 87% sensitivity, and 83% specificity. Outperforming the Bayesian classifier on all metrics.
+
+#General Conclusions for QOI5:
+
+# Finally, we discuss salary predictions. A multiple linear regression model was used to achieve desired results. Initially a model was used using all predictors, however this yielded a R^2 value that was impossibly high. A plot was then generated using the Caret package which visually showed the importance of each varible in the model. The following variables were included in the final model: job level, totalworkingyears, yearswithcurrmanager, distance from home. The linear model was generated and each of the variables were considered significant at the P<0.05 level. Addtionally the model itself was significant with P<0.05.
+
+#In conclusion, we looked at factors that contribute to attrition, examined job role specific trends, predicted attrition using RDA, and predicted monthly income using a linear model. I hope these results can be used in a meaningful way.  Thanks Frito-lay.
+
+
+```
+
+
 
 ```{r}
 #############################################
@@ -15,6 +103,8 @@ knitr::opts_chunk$set(echo = TRUE)
 #               Libraries                   #
 #                                           #
 #############################################
+
+#This section contains libraries necessary for the functionality of this analysis
 
 #Missingness maps
 library(naniar)
@@ -33,7 +123,15 @@ library(GGally)
 #Plotting PCA 
 library(ggfortify)
 library(pca3d)
+library(FactoMineR)
+library(factoextra)
 
+#For oversampling
+library(imbalance)
+
+#For Ml
+library(caret)
+library(e1071)
 
 ```
 
@@ -49,6 +147,8 @@ library(pca3d)
 #                                           #
 #############################################
 
+#This section adds the files into the R project space so that the analysis can be performed. 
+
 #Read in primary data ("CaseStudy2-data.txt")
 primaryData <- read.table("CaseStudy2-data.txt",sep = ",",header = TRUE)
 #Peek data
@@ -63,7 +163,7 @@ predictionsClassify <- read.table("Case2PredictionsClassifyEXAMPLE.txt",sep = ",
 predictionsRegression <- read.table("Case2PredictionsRegressEXAMPLE.txt",sep = ",",header = TRUE)
 
 #Case study 2 compset no attrition dataset ("CaseStudy2CompSet No Attrition.txt")
-compsetNoAttrition <- read.table("CaseStudy2CompSet No Attrition.txt",sep = ",",header = TRUE)
+compsetNoAttrition <- read.table("NoAttrition.txt",sep = ",",header = TRUE)
 
 #Case study 2 compset no salary dataset ("CaseStudy2CompSet No Salary.xlsx")
 compsetNoSalary <- read_excel("CaseStudy2CompSet No Salary.xlsx")
@@ -78,6 +178,9 @@ compsetNoSalary <- read_excel("CaseStudy2CompSet No Salary.xlsx")
 #       EDA and Data Preperation            #
 #                Part 1                     #
 #############################################
+
+#EDA is necessary to visually examine the data and begin to learn about the ways
+#of this dataset.  First we will start with missingness.
 
 #Examine primary dataset for missingness
 primaryDatMiss <- vis_miss(primaryData)
@@ -111,6 +214,8 @@ compsetNoSalaryMiss
 #                Part 2                     #
 #                                           #
 #############################################
+
+#EDA is necessary to visually examine the data and begin to learn about the ways of this dataset
 
 #Convert all CHR variables to factors to examine pairs data
 primaryData_factor <- primaryData %>%
@@ -168,6 +273,8 @@ plot(primaryData_factor$Attrition,primaryData_factor$DistanceFromHome)
 
 
 ```
+
+
 ```{r}
 #############################################
 #                                           #
@@ -184,7 +291,7 @@ plot(primaryData_factor$Attrition,primaryData_factor$DistanceFromHome)
 
 #A bit of data preperation
 pcaDat <- primaryData_int[,c(2:4,6:9,12:13,15:20,22:36)]
-pcaDat
+#pcaDat
 
 PCAdat_factor <- primaryData_int[,c(2:4,6:9,12:13,15:20,22:36)]
 #PCAdat_factor[,c(2,3,4,7,9,12,14,17,18)] <- as.integer(PCAdat_factor[,c(2,3,4,7,9,12,14,17,18)])
@@ -193,7 +300,7 @@ PCAdat_factor$Attrition <- factor(PCAdat_factor$Attrition,levels = c(1,2),labels
 
 
 S <- cov(pcaDat[,c(1,3:30)])
-S
+#S
 
 #Examine total variance, (sum of the eigenvalues of S)
 sum(diag(S))
@@ -215,7 +322,7 @@ plot(s.eigen$values, xlab="Eigenvalue Number",ylab="Eigenvalue Size",main="Scree
 
 ####Use R packages to confirm results####
 quitters.pca <- prcomp(pcaDat[,c(1,3:30)])
-quitters.pca
+#quitters.pca
 
 #Components reported by package are equal to earlier computations
 
@@ -230,15 +337,15 @@ pca.plot
 
 #Create new df for R
 rDat <- pcaDat[,c(1,3:16,18:21,23:30)]
-rDat
+#rDat
 
 #Lets use R instead of S 
 R <- cor(rDat)
-R
+#R
 
 #Again find Eigenvalues and Eigenvectors for R
 r.eigen <- eigen(R)
-r.eigen
+#r.eigen
 
 
 #Compute proportion of total variance explained by the eigenvalues
@@ -249,7 +356,7 @@ for (r in r.eigen$values) {
 
 #PCA (scaled)
 quitters.pca.scaled <- prcomp(rDat,scale = TRUE)
-quitters.pca.scaled
+#quitters.pca.scaled
 
 #Summary of scaled 
 summary(quitters.pca.scaled)
@@ -264,7 +371,7 @@ pca.plot.scaled
 
 
 #Check out a 3D plot to attempt to determine best components to use
-pca3d(quitters.pca.scaled,group=PCAdat_factor$Attrition,legend = "topleft",biplot = TRUE,biplot.vars = 3)
+#pca3d(quitters.pca.scaled,group=PCAdat_factor$Attrition,legend = "topleft",biplot = TRUE,biplot.vars = 3)
 
 
 ####Plots of PCs####
@@ -393,7 +500,7 @@ text(l.x, l.y, labels=rownames(l.x) , col="black", pos=c(2, 3, 4, 1), offset=1, 
 
 #The second component is mostly correlated with number of companies worked, and age, but in a negative direction.  Years with current manager and years in current role are correlated with the second component in the positive direction, which indicates that as number of companies and age decrease, years with current manager and years in current role increase.  
 
-#Looking at the biplot, we can see the loaings that point in the direction of the attrition ellipse.  In terms of the first component, we can see that Job Role and Marriage Status point more towards the attrition ellipse.  The same with Job Satisfaction and percent salary hike for the second component. 
+#Looking at the biplot, we can see the loadings that point in the direction of the attrition ellipse.  In terms of the first component, we can see that Job Role and Marriage Status point more towards the attrition ellipse.  The same with Job Satisfaction and percent salary hike for the second component. 
 
 ```
 
@@ -550,19 +657,21 @@ rolePCA <- prcomp(pcaDatPlotsRoles,scale = TRUE,center = TRUE)
 
 #Save summary object
 s <- summary(rolePCA)
-s$rotation
+#s$rotation
 ```
 
 ```{r}
 #Scree plot
 fviz_eig(rolePCA, addlabels=TRUE, hjust = -0.3,
                linecolor ="red",ncp = 15) + theme_minimal()
+
+
 ```
 
 ```{r}
 # Create groups
 pch.group <- c(rep(25, times=76), rep(15, times=27), rep(21, times=153), rep(22, times=51), rep(23, times=87), rep(24, times=51), rep(25, times=172), rep(21, times=200), rep(22, times=53))
-col.group <- c(rep("lawngreen", times=76), rep("brown", times=27), rep("red", times=153), rep("purple", times=51), rep("cyan", times=87), rep("gold", times=51), rep("coral", times=172), rep("deeppink", times=200), rep("midnightblue", times=53))
+col.group <- c(rep("green", times=76), rep("brown", times=27), rep("red", times=153), rep("purple", times=51), rep("cyan", times=87), rep("gold", times=51), rep("coral", times=172), rep("deeppink", times=200), rep("midnightblue", times=53))
 
 
 
@@ -575,7 +684,7 @@ abline(h=0, lty=2, col="grey50")
 
 
 # Add legend
-legend("topleft", legend=c("Healthcare Representative", "Human Resources","Laboratory Technician","Manager","Manufacturing Director","Research Director","Research Scientist","Sales Executive","Sales Representative"), col="black", pt.bg=c("lawngreen", "brown","red","purple","cyan","gold","coral","deeppink","midnightblue"), pch=c(25,15,21,22,23,24,25, 21,22), pt.cex=1.5,cex = 0.5)
+legend("topleft", legend=c("Healthcare Representative", "Human Resources","Laboratory Technician","Manager","Manufacturing Director","Research Director","Research Scientist","Sales Executive","Sales Representative"), col="black", pt.bg=c("green", "brown","red","purple","cyan","gold","coral","deeppink","midnightblue"), pch=c(25,15,21,22,23,24,25, 21,22), pt.cex=1.5,cex = 0.5)
 
 # Get individuals (observations) as a matrix
 tab <- matrix(c(rolePCA$x[,1], rolePCA$x[,2]), ncol=2)
@@ -593,7 +702,7 @@ c9 <- cor(tab[816:870,])
 # Load package
 library(ellipse)
 # Plot ellipse
-polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[1:56,]), level=0.95), col=adjustcolor("lawmgreen", alpha.f=0.25), border="lawngreen")
+polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[1:56,]), level=0.95), col=adjustcolor("green", alpha.f=0.25), border="green")
 polygon(ellipse(c2*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[57:83,]), level=0.95), col=adjustcolor("brown", alpha.f=0.25), border="brown")
 polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[84:256,]), level=0.95), col=adjustcolor("red", alpha.f=0.25), border="red")
 polygon(ellipse(c1*(max(abs(quitters.pca.scaledPlots$rotation))*1), centre=colMeans(tab[257:287,]), level=0.95), col=adjustcolor("purple", alpha.f=0.25), border="purple")
@@ -664,7 +773,7 @@ ggplotConfusionMatrix <- function(m){
 ###############################################################################
 
 #Read in primary data ("CaseStudy2-data.txt")
-primaryData <- read.table("CaseStudy2-data.txt",sep = ",",header = TRUE)
+primaryData <- read.table("/Users/benjamingoodwin/Desktop/casestudy2DDS/CaseStudy2DDS/CaseStudy2-data.txt",sep = ",",header = TRUE)
 
 #Convert all CHR variables to factors to examine pairs data
 primaryData_factor <- primaryData %>%
@@ -695,7 +804,7 @@ testing <- nnDat[-inTrain,]
 
 ctrl <- trainControl(method = "repeatedcv", repeats = 3,classProbs = TRUE, summaryFunction = twoClassSummary)
 
-noAttDs <- read.table("noAttrition.txt",sep = ",",header = TRUE)
+noAttDs <- read.table("/Users/benjamingoodwin/Desktop/casestudy2DDS/CaseStudy2DDS/noAttrition.txt",sep = ",",header = TRUE)
 
 nnDat1 <- noAttDs
 #Remove unneeded cols
@@ -736,7 +845,8 @@ other1 <- predict(rdaFit,newdata = nnDat1,type = "raw")
 
 newDf <- noAttDs
 newDf$Attrition=other1
-View(newDf)
+
+#View(newDf)
 
 newDf <- newDf[,c(1,28)]
 
@@ -749,7 +859,7 @@ out <- write.csv(newDf,"~/Documents/Case2PredictionsGoodwinAttrition.csv",row.na
 
 ##Data prep for NB
 #Read in primary data ("CaseStudy2-data.txt")
-primaryData <- read.table("CaseStudy2-data.txt",sep = ",",header = TRUE)
+primaryData <- read.table("/Users/benjamingoodwin/Desktop/casestudy2DDS/CaseStudy2DDS/CaseStudy2-data.txt",sep = ",",header = TRUE)
 
 #Convert all CHR variables to factors to examine pairs data
 primaryData_factor <- primaryData %>%
@@ -805,6 +915,15 @@ ggplotConfusionMatrix(cfm)
 
 ###############################################################################
 #Make predictions, with NB model
+noAttDs <- read.table("/Users/benjamingoodwin/Desktop/casestudy2DDS/CaseStudy2DDS/noAttrition.txt",sep = ",",header = TRUE)
+#Make factors
+noAttDs <- noAttDs %>%
+  mutate_if(sapply(noAttDs, is.integer), as.factor)
+#Remove unneeded cols
+noAttDs <- noAttDs[,-c(4,9,10,13,20,22,23,27)]
+
+
+
 nb_train_predictNewDS <- predict(NBclassfier,noAttDs)
 nb_train_predictNewDS
 
@@ -815,11 +934,53 @@ newDf$Attrition=nb_train_predictNewDS
 
 
 newDf <- newDf[,c(1,28)]
-
-out <- write.csv(newDf,"~/Documents/Case2PredictionsGoodwinAttrition.csv",row.names = FALSE)
-
-
-
+newDf
 
 ```
+
+```{r}
+primaryData <- read.table("/Users/benjamingoodwin/Desktop/casestudy2DDS/CaseStudy2DDS/CaseStudy2-data.txt",sep = ",",header = TRUE)
+salaryDatNoinfo <- compsetNoSalary
+
+salaryDat <- primaryData[,c(16,20,30,7,36)]
+
+
+
+salaryDatlm <- lm(MonthlyIncome~JobLevel+TotalWorkingYears+YearsWithCurrManager+DistanceFromHome,data = salaryDat)
+summary(salaryDatlm)
+
+RSS <- c(crossprod(salaryDatlm$residuals))
+MSE <- RSS / length(salaryDatlm$residuals)
+RMSE <- sqrt(MSE)
+sig2 <- RSS / salaryDatlm$df.residual
+
+plotlm <- train(MonthlyIncome~JobLevel+TotalWorkingYears+YearsWithCurrManager+DistanceFromHome,data=salaryDat,method="lm",trainControl=tc)
+
+
+ggplot(varImp(plotlm))
+
+##########EDA for Salary##########
+salaryDatEDA <- primaryData[,-c(1,5,10,11,14,21,23,24,28)]
+samp <- createDataPartition(salaryDatEDA$MonthlyIncome,p=0.8,list = FALSE)
+training <- salaryDatEDA[samp,]
+testing <- salaryDatEDA[-samp,]
+
+tc <- trainControl(method = "cv",number = 10)
+lm1_cv <- train(MonthlyIncome~.,data=salaryDatEDA,method="lm",trainControl=tc)
+lm1_cv
+ggplot(varImp(lm1_cv))
+
+predictedSal <- predict(salaryDatlm,salaryDatNoinfo)
+table(predictedSal)
+
+newDf <- salaryDatNoinfo
+newDf$MonthlyIncome=predictedSal
+#View(newDf)
+
+newDf <- newDf[,c(1,36)]
+
+out <- write.csv(newDf,"~/Documents/Case2PredictionsGoodwinSalary.csv",row.names = FALSE)
+```
+
+
 
