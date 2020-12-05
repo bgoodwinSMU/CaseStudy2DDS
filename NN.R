@@ -1,11 +1,5 @@
 #NN testing
 
-#Libraries
-library(neuralnet)
-library(caret)
-library(splitstackshape)
-library(imbalance)
-
 #Read in primary data ("CaseStudy2-data.txt")
 primaryData <- read.table("CaseStudy2-data.txt",sep = ",",header = TRUE)
 
