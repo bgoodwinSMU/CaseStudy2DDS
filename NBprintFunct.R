@@ -26,4 +26,3 @@ ggplotConfusionMatrix <- function(m){
     ggtitle(mytitle)
   return(p)
 }
-#
