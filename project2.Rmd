@@ -34,6 +34,7 @@ knitr::opts_knit$set(root.dir = "/Users/benjamingoodwin/Desktop/casestudy2DDS/Ca
 # 
 # I am confident in the validity of this analysis and hope that Frito-Lay determines an appropriate course of action to take based on the work in this R markdown file.
 
+#YouTube link: https://youtu.be/UtNPEyfNsoY
 
 #Execuitive Summary
 
