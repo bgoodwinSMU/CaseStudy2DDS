@@ -6,7 +6,7 @@ Included in this repository are the following: Codebook, original data .txt file
 
 Github.io link: https://bgoodwinsmu.github.io/
 
-YouTube link: 
+YouTube link: https://youtu.be/UtNPEyfNsoY
 
 Project Summary
 
